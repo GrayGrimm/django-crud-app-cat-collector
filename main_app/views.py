@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
-from django.views.generic.edit import CreateView
-from .models import Cat
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView # add these 
+from .models import Cat, Toy
 from .forms import FeedingForm
 
 # Add UdpateView & DeleteView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 # Create your views here.
 
@@ -57,4 +57,23 @@ def add_feeding(request, cat_id):
         new_feeding = form.save(commit=False)
         new_feeding.cat_id = cat_id
         new_feeding.save()
-    return redirect('cat-detail', cat_id=cat_id)
+    return redirect("cat-detail", cat_id=cat_id)
+
+
+class ToyCreate(CreateView):
+    model = Toy
+    fields = "__all__"
+
+class ToyList(ListView):
+    model = Toy
+
+class ToyDetail(DetailView):
+    model = Toy
+    
+class ToyUpdate(UpdateView):
+    model = Toy
+    fields = ['name', 'color']
+
+class ToyDelete(DeleteView):
+    model = Toy
+    success_url = '/toys/'
