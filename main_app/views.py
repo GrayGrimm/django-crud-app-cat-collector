@@ -1,16 +1,22 @@
 from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import ListView, DetailView  # add these
+from django.contrib.auth.views import LoginView
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
 from .models import Cat, Toy
 from .forms import FeedingForm
 
 # Add UdpateView & DeleteView
 
+
 # Create your views here.
+class Home(LoginView):
+    template_name = "home.html"
 
 
-def home(request):
-    return render(request, "home.html")
+# def home(request):
+#     return render(request, "home.html")
 
 
 def about(request):
@@ -40,6 +46,13 @@ def cat_detail(request, cat_id):
 class CatCreate(CreateView):
     model = Cat
     fields = ["name", "breed", "description", "age"]
+
+    def form_valid(self, form):
+        # Assign the logged in user (self.request.user)
+        form.instance.user = self.request.user
+        # form.instance is the cat
+        # Let the CreateView do its job as usual
+        return super().form_valid(form)
 
 
 class CatUpdate(UpdateView):
@@ -95,3 +108,24 @@ def remove_toy(request, cat_id, toy_id):
     toy = Toy.objects.get(id=toy_id)
     cat.toys.remove(toy)
     return redirect("cat-detail", cat_id=cat.id)
+
+
+def signup(request):
+    error_message = ""
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+
+        if form.is_valid():
+            user = form.save()
+
+            login(request, user)
+            return redirect("cat-index")
+
+        else:
+            error_message = "Invalid Sign up - try again!"
+
+
+    form = UserCreationForm()
+    context = {'form': form, 'error_message': error_message}
+    return render(request, 'signup.html', context)
+
